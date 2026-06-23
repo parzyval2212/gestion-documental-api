@@ -20,6 +20,6 @@ app.use(limiter);
 app.use("/auth", require("./routes/auth"));
 app.use("/documentos", require("./routes/documentos"));
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT, "0.0.0.0", () => {
   console.log("API corriendo en puerto " + process.env.PORT);
 });
