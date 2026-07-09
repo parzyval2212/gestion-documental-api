@@ -8,3 +8,10 @@ services:
       - PORT=3000
       - JWT_SECRET=supersecret123
       - API_KEY=123456apikey
+      - DATABASE_PATH=/app/data/gestion_documental.db
+      - UPLOAD_DIR=/app/uploads
+      - SEED_USER_USERNAME=juez
+      - SEED_USER_PASSWORD=1234
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads

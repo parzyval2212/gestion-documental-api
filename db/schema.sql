@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  categoria TEXT NOT NULL,
+  creado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS documentos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  nombre_archivo TEXT NOT NULL,
+  ruta_archivo TEXT NOT NULL,
+  tipo_mime TEXT NOT NULL,
+  extension TEXT NOT NULL,
+  tamano INTEGER NOT NULL,
+  creado_por INTEGER NOT NULL,
+  creado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (creado_por) REFERENCES usuarios(id)
+);

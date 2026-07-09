@@ -1,8 +1,9 @@
-module.exports = (role) => {
+module.exports = (categoria) => {
   return (req, res, next) => {
-    if (req.user.role !== role) {
+    if (req.user.categoria !== categoria) {
       return res.status(403).json({ message: "No autorizado" });
     }
+
     next();
   };
 };
