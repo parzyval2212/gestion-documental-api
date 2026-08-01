@@ -1,0 +1,151 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-gestion_documental}
+      MYSQL_USER: ${MYSQL_USER:-dochub}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dochub_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - privado
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - privado
+
+  api1:
+    build:
+      context: ../..
+    container_name: api1
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DB_CLIENT: mysql
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-gestion_documental}
+      MYSQL_USER: ${MYSQL_USER:-dochub}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dochub_password}
+      JWT_SECRET: ${JWT_SECRET:-change_me}
+      API_KEY: ${API_KEY:-change_me}
+      UPLOAD_DIR: /app/uploads
+      SEED_USER_USERNAME: ${SEED_USER_USERNAME:-juez}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-1234}
+    ports:
+      - "8001:3000"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mysql
+    networks:
+      - privado
+
+  api2:
+    build:
+      context: ../..
+    container_name: api2
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DB_CLIENT: mysql
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-gestion_documental}
+      MYSQL_USER: ${MYSQL_USER:-dochub}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dochub_password}
+      JWT_SECRET: ${JWT_SECRET:-change_me}
+      API_KEY: ${API_KEY:-change_me}
+      UPLOAD_DIR: /app/uploads
+      SEED_USER_USERNAME: ${SEED_USER_USERNAME:-juez}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-1234}
+    ports:
+      - "8002:3000"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mysql
+    networks:
+      - privado
+
+  flask1:
+    image: nginx:alpine
+    container_name: flask1
+    restart: unless-stopped
+    ports:
+      - "5001:80"
+    networks:
+      - privado
+
+  flask2:
+    image: nginx:alpine
+    container_name: flask2
+    restart: unless-stopped
+    ports:
+      - "5002:80"
+    networks:
+      - privado
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - privado
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - privado
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    restart: unless-stopped
+    networks:
+      - privado
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql_exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: ${MYSQL_USER:-dochub}:${MYSQL_PASSWORD:-dochub_password}@(mysql:3306)/
+    depends_on:
+      - mysql
+    networks:
+      - privado
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis_exporter
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - privado
+
+volumes:
+  mysql_data:
+  uploads_data:
+
+networks:
+  privado:
+    driver: bridge
